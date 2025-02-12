@@ -1,0 +1,105 @@
+---
+title: "Population Dynamics at HBCUs and Ivy League Institutions"
+author: 
+  - "Nathan Alexander"
+  - "Center for Applied Data Science and Analytics"
+  - "Howard University"
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+    toc_float: true  # Enable floating TOC in the sidebar
+    number_sections: true
+    theme: cerulean
+    always_allow_html: true
+    self_contained: true
+editor_options:
+  markdown:
+    wrap: sentence
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+remotes::install_github('jbryer/ipeds')
+```
+
+```{r ipeds, include=F}
+library(ipeds)
+library(ggplot2)
+library(xtable)
+#install.packages("maps")
+library(maps)
+
+# list of the currently available functions
+ls('package:ipeds')
+```
+
+# DATA
+
+Loading data from an [`ipeds` R package](https://github.com/jbryer/ipeds) to analyze population dynamics at HBCUs and Ivy League Institutions.
+
+The Integrated Postsecondary Education Data System, or IPEDS, contains data on higher education institutions in the United States. The data are made publically available for analysis by researchers. 
+
+For this memo, I used the `ipeds` package in R to perform all analysis.
+
+
+```{r, include=F}
+# list of surveys that are available to download
+data(surveys)
+surveys[,c('SurveyID', 'Title')]
+
+# list of all available CIP codes
+data(cipcodes)
+names(cipcodes)
+
+# data available
+ipeds::available_ipeds() 
+```
+
+
+## Institutions
+
+```{r, eval=F}
+ipeds::download_ipeds(
+  year = 2018, 
+  dir = "/Users/nathanalexander/Dropbox/Work items/Howard/C&I/Memos/data/downloaded",
+  force=T) # download data
+ipeds2018 <- ipeds::load_ipeds(2018) # load data
+names(ipeds2018)
+hd2021 <- ipeds::ipeds_survey(table = 'HD', year = 2021)
+names(hd2021)
+names(hd2021) <- tolower(names(hd2021))
+hd2021 <- ipeds::recodeDirectory(hd2021)
+
+HBCUs <- c(
+  "220182", # Tennessee State University
+  "175772", # Jackson State University
+  "234155", # Virginia State University
+  "176044", # Mississippi Valley State University
+  "198543", # Fayetteville State University
+  "198507", # Elizabeth City State University
+  "199102", # North Carolina A&T State University
+  "131520"  # Howard University
+)
+
+hd202.hbcu <- hd2021[which(hd2021$unitid %in%HBCU),]
+p <- hd2021.hbcu[, c("instnm", "webaddr", "stabbr", "control")]
+names(p) <- c("Institution", "Web Address", "State", "Sector")
+p
+
+IvyLeague <- c(
+  "186131", # Yale University
+  "190150", # Columbia University
+  "166027", # Cornell University
+  "130794", # Dartmouth College
+  "215062", # University of Pennsylvania
+  "182670", # Princeton University
+  "217156", # Brown University
+  "190415"  # Harvard University
+)
+
+hd2021.ivy <- hd2021[which(hd2021$unitid %in%IvyLeague),]
+q <- hd2021.ivy[, c("instnm", "webaddr", "stabbr", "control")]
+names(p) <- c("Institution", "Web Address", "State", "Sector")
+q
+```
